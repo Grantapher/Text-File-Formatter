@@ -12,14 +12,14 @@ public interface FormatTask {
      * @param line
      *            the line to format
      * @return the formatted line
-     *
+     *        
      */
     public String format(String line);
 
     /**
      * Gets the priority of the task. A smaller integer means that task will be
      * executed before another with a higher integer.
-     * 
+     *
      * @return the tasks priority
      */
     public int getPriority();
