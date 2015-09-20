@@ -2,6 +2,7 @@ package view;
 
 import java.awt.BorderLayout;
 
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
@@ -28,15 +29,22 @@ public class MainPanel extends JPanel {
 
         final FilePreviewTextArea textArea = new FilePreviewTextArea();
         final OptionPanel optionPanel = new OptionPanel(observer, textArea);
-
-        add(new FileChooserPanel(observer, textArea), BorderLayout.NORTH);
-
+        
         final JPanel middlePanel = new JPanel();
         middlePanel.setLayout(new BorderLayout(GAP_BETWEEN_COMPONENTS, GAP_BETWEEN_COMPONENTS));
         middlePanel.add(optionPanel, BorderLayout.NORTH);
+        
+        final JPanel previewPanel = new JPanel();
+        middlePanel.add(previewPanel, BorderLayout.CENTER);
+        previewPanel.setLayout(new BorderLayout(0, 0));
+
+        final JLabel previewLabel = new JLabel("Preview:");
+        previewPanel.add(previewLabel, BorderLayout.NORTH);
+        
+        add(new FileChooserPanel(observer, textArea), BorderLayout.NORTH);
 
         final JScrollPane scrollPane = new JScrollPane(textArea);
-        middlePanel.add(scrollPane, BorderLayout.CENTER);
+        previewPanel.add(scrollPane);
 
         add(middlePanel, BorderLayout.CENTER);
         add(new ButtonPanel(observer), BorderLayout.SOUTH);
