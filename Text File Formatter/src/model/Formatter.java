@@ -9,60 +9,78 @@ import java.io.PrintWriter;
 import java.util.List;
 
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 
+import view.ButtonPanel;
 import view.FileChooserPanel;
-import view.OptionPanel;
 
 public class Formatter implements Observer {
-    private static final String CURRENT_DIRECTORY = System.getProperty("user.dir");
-    private static final String TEMP_FILENAME = "tmp";
-    private File file;
-
-    private void format(final JPanel subject, final List<FormatTask> tasks) {
-        if (tasks.isEmpty()) {
-            return;
+    
+    /**
+     * Formats the file
+     *
+     * @param file the text file to format
+     * @return a string containing the formatted text
+     */
+    public static String format(final File file, final List<AbstractFormatTask> tasks) {
+        return format(file, tasks, -1);
+    }
+    
+    /**
+     * Formats the file for the given number of lines.
+     *
+     * @param file the text file to format
+     * @param numLines the number of lines to format
+     * @return a string containing the formatted text
+     */
+    public static String format(final File file, final List<AbstractFormatTask> tasks, final int numLines) {
+        if (file == null || !file.exists() || file.isDirectory()) {
+            return "";
         }
-
-        tasks.sort((t1, t2) -> Integer.compare(t1.getPriority(), t2.getPriority()));
-        final File tempFile = new File(CURRENT_DIRECTORY, TEMP_FILENAME);
         
+        final StringBuilder sb = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            try (PrintWriter writer = new PrintWriter(tempFile)) {
-                String line;
-                while (null != (line = reader.readLine())) {
-                    for (final FormatTask task : tasks) {
-                        line = trimNewLines(line);
-                        line = task.format(line);
-                    }
-                    if (!line.isEmpty()) {
-                        writer.print(line);
-                    }
+            String line;
+            for (int i = 0; null != (line = reader.readLine()) && (numLines == -1 || i < numLines); i++) {
+                line += '\n';
+                for (final FormatTask task : tasks) {
+                    line = trimNewLines(line);
+                    line = task.format(line);
+                }
+                if (!line.isEmpty()) {
+                    sb.append(line);
                 }
             }
         } catch (final FileNotFoundException e) {
-            JOptionPane.showMessageDialog(subject, "WTF: File not Found", "What a Terrible Failure",
+            JOptionPane.showMessageDialog(null, "WTF: File not Found", "What a Terrible Failure",
                     JOptionPane.ERROR_MESSAGE);
         } catch (final IOException e) {
-            JOptionPane.showMessageDialog(subject, "File Read Failed", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "File Read Failed", "Error", JOptionPane.ERROR_MESSAGE);
         }
         
-        file.delete();
-        tempFile.renameTo(file);
+        return sb.toString();
     }
-
-    private String trimNewLines(final String line) {
+    
+    private static String trimNewLines(final String line) {
         return line.replaceAll("\n", "");
     }
-
+    
+    private File file;
+    
     @Override
     public void update(final Subject subject, final Object arg) {
         if (subject instanceof FileChooserPanel) {
             file = (File) arg;
-        } else if (subject instanceof OptionPanel && file != null && file.exists() && file.isFile()) {
-            @SuppressWarnings("unchecked")
-            final List<FormatTask> tasks = (List<FormatTask>) arg;
-            format((JPanel) subject, tasks);
+        } else if (subject instanceof ButtonPanel) {
+            final List<AbstractFormatTask> tasks = AllTasks.getSelectedTasks();
+            if (tasks.isEmpty()) {
+                return;
+            }
+            try (PrintWriter writer = new PrintWriter(file)) {
+                writer.print(format(file, tasks));
+            } catch (final FileNotFoundException e) {
+                JOptionPane.showMessageDialog(null, "WTF: File not Found", "What a Terrible Failure",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 

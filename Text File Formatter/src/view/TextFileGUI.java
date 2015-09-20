@@ -12,7 +12,7 @@ public class TextFileGUI extends JFrame {
     private static final long serialVersionUID = -5957038959556058788L;
     private static final String TITLE = "Grant's Text File Formatter";
     private static final Toolkit TOOLKIT = Toolkit.getDefaultToolkit();
-    private static final Dimension DEFAULT_SIZE = new Dimension(426, 240);
+    private static final Dimension MINIMUM_SIZE = new Dimension(400, 400);
 
     public TextFileGUI(final Observer observer) {
         setup(observer);
@@ -30,7 +30,7 @@ public class TextFileGUI extends JFrame {
         setTitle(TITLE);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setContentPane(new MainPanel(observer));
-        setPreferredSize(DEFAULT_SIZE);
+        setMinimumSize(MINIMUM_SIZE);
         pack();
         setBounds(centerRectangle(getBounds(), TOOLKIT.getScreenSize()));
         setVisible(true);

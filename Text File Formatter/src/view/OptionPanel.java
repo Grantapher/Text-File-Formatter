@@ -1,62 +1,63 @@
 package view;
 
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import javax.swing.JCheckBox;
+import javax.swing.AbstractAction;
 import javax.swing.JPanel;
 
 import model.AbstractFormatTask;
 import model.AllTasks;
-import model.FormatTask;
 import model.Observer;
 import model.Subject;
 
-public class OptionPanel extends JPanel implements Subject, Observer {
-    private static final int COMPONENT_GAP = 5;
+public class OptionPanel extends JPanel implements Subject {
+    private class Action extends AbstractAction {
+        private static final long serialVersionUID = 1993163230217634700L;
+
+        @Override
+        public void actionPerformed(final ActionEvent e) {
+            notifyObservers(null);
+        }
+
+    }
+    
     private static final long serialVersionUID = 4714933485302002099L;
     private final List<AbstractFormatTask> checkboxes;
     private final List<Observer> observers;
-    
-    public OptionPanel(final Observer observer) {
-        observers = new LinkedList<>();
-        observers.add(observer);
+
+    public OptionPanel(final Observer... observers) {
+        this.observers = new LinkedList<>();
+        Arrays.stream(observers).forEach(this.observers::add);
+        
         checkboxes = new LinkedList<>();
         setup();
     }
-    
+
     @Override
     public void addObserver(final Observer observer) {
         observers.add(observer);
     }
-    
-    private void addTask(final FormatTask task) {
-        add((JCheckBox) task);
-        checkboxes.add((AbstractFormatTask) task);
-    }
 
-    private List<FormatTask> getTasks() {
-        return checkboxes.stream()
-                .filter(AbstractFormatTask::isSelected)
-                .collect(Collectors.toList());
+    private void addTask(final AbstractFormatTask task) {
+        final Action action = new Action();
+        action.putValue(Action.NAME, task.getText());
+        task.setAction(action);
+        add(task);
+        checkboxes.add(task);
     }
 
     @Override
     public void notifyObservers(final Object arg) {
         observers.stream().forEach(observer -> observer.update(this, arg));
     }
-    
+
     private void setup() {
-        setLayout(new FlowLayout(FlowLayout.LEADING, COMPONENT_GAP, COMPONENT_GAP));
+        setLayout(new WrapLayout(FlowLayout.LEADING, 0, 0));
         AllTasks.getTasks().stream().forEach(task -> addTask(task));
     }
     
-    @Override
-    public void update(final Subject subject, final Object arg) {
-        if (subject instanceof ButtonPanel) {
-            notifyObservers(getTasks());
-        }
-    }
 }
