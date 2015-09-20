@@ -14,7 +14,7 @@ public class FilePreviewTextArea extends JTextArea implements Observer {
     private static final long serialVersionUID = 7373491621280502735L;
     private static final int NUMBER_LINES_PREVIEW = 100;
     private File file;
-
+    
     public FilePreviewTextArea() {
         setup();
     }
@@ -24,16 +24,21 @@ public class FilePreviewTextArea extends JTextArea implements Observer {
         caret.setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
         setEditable(false);
     }
-
+    
     @Override
     public void update(final Subject subject, final Object arg) {
         if (subject instanceof FileChooserPanel) {
             file = (File) arg;
         }
         if (file != null) {
-            final String previewText = Formatter.format(file, AllTasks.getSelectedTasks(), NUMBER_LINES_PREVIEW);
+            String previewText = Formatter.format(file, AllTasks.getSelectedTasks(), NUMBER_LINES_PREVIEW);
+
+            previewText = previewText.replaceAll("\t", "\u2192");
+            previewText = previewText.replaceAll("\n", "\u00b6\n");
+            previewText = previewText.replaceAll(" ", "\u00B7");
+
             setText(previewText);
         }
     }
-
+    
 }
